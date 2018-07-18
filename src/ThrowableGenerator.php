@@ -3,7 +3,6 @@
 namespace glen\ThrowableGenerator;
 
 use Generator;
-use iterable;
 use IteratorAggregate;
 use Throwable;
 
