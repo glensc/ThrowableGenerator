@@ -1,0 +1,12 @@
+{
+    "name": "glen/throwable-generator",
+    "description": "ThrowableGenerator",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Elan Ruusamäe",
+            "email": "glen@pld-linux.org",
+            "role": "Developer"
+        }
+    ]
+}
