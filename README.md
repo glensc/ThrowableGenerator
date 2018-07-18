@@ -64,3 +64,11 @@ See question and discussion on [stackoverflow post]
 
 [Generator::throw]: http://php.net/manual/en/generator.throw.php
 [stackoverflow post]: https://stackoverflow.com/questions/51382259/why-in-php-using-generatorthrow-omits-yielded-values-after-throw
+
+To use this class, wrap your original generator with this class:
+
+```php
+$generator = new ThrowableGenerator($generator);
+```
+
+Note: There is API change, `throw()` will return nothing instead of next value from generator.

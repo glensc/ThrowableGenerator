@@ -8,5 +8,16 @@
             "email": "glen@pld-linux.org",
             "role": "Developer"
         }
-    ]
+    ],
+    "archive": {
+        "exclude": ["/.*", "/*.json"]
+    },
+    "autoload": {
+        "psr-4": {
+            "glen\\ThrowableGenerator\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^7.0"
+    }
 }
