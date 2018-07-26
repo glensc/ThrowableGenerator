@@ -38,23 +38,18 @@ class ThrowableGenerator implements IteratorAggregate
             retry:
             yield $item;
 
+            if ($this->exception) {
+                $value = $this->inner->throw($this->exception);
+                if ($this->inner->valid()) {
+                    $this->items[] = $value;
+                }
+                $this->exception = null;
+            }
+
             if ($this->items) {
                 $item = array_shift($this->items);
 
-                // $item may be missing if the inner generator ended
-                if ($this->inner->valid()) {
-                    goto retry;
-                }
-            }
-
-            if ($this->exception) {
-                $item = $this->inner->throw($this->exception);
-                $this->exception = null;
-
-                // $item may be missing if the inner generator ended
-                if ($this->inner->valid()) {
-                    goto retry;
-                }
+                goto retry;
             }
         }
     }
@@ -66,7 +61,9 @@ class ThrowableGenerator implements IteratorAggregate
 
     public function send($value)
     {
-        // use array, to be able to send `null` values
-        $this->items[] = $this->inner->send($value);
+        $nextValue = $this->inner->send($value);
+        if ($this->inner->valid()) {
+            $this->items[] = $nextValue;
+        }
     }
 }
