@@ -57,6 +57,12 @@ class GeneratorTest extends TestCase
     public function sequenceProvider(): array
     {
         return [
+            [
+                range(1, 2),
+                [1, 2],
+                [2],
+                [2],
+            ],
             /**
              * Without the wrapper, processed items are:
              *  [ 1, 2, 4, 6 ]

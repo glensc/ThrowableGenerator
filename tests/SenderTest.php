@@ -40,6 +40,12 @@ class SenderTest extends TestCase
     public function sequenceProvider(): array
     {
         return [
+            [
+                range(1, 2),
+                [1, 2],
+                [1, 2],
+                [2],
+            ],
             /**
              * without the wrapper $processed items are:
              *  [1, 3, 5]
