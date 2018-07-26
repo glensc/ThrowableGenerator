@@ -2,6 +2,7 @@
 
 namespace glen\ThrowableGenerator\Tests;
 
+use Generator;
 use glen\ThrowableGenerator\ThrowableGenerator;
 use InvalidArgumentException;
 use Throwable;
@@ -12,9 +13,16 @@ class GeneratorTest extends TestCase
     private $throwing = [];
     private $catched = [];
 
-    public function testIteratorReceivesAllItems()
-    {
-        $generator = $this->getIterator(range(1, 6));
+    /**
+     * @dataProvider sequenceProvider
+     */
+    public function testIteratorReceivesAllItems(
+        array $items,
+        array $expectedProcessed,
+        array $expectedThrows,
+        array $expectedCatches
+    ) {
+        $generator = $this->getIterator($items);
         $generator = new ThrowableGenerator($generator);
 
         foreach ($generator as $item) {
@@ -29,12 +37,12 @@ class GeneratorTest extends TestCase
                 $generator->throw($e);
             }
         }
-        $this->assertEquals([1, 2, 3, 4, 5, 6], $this->processed);
-        $this->assertEquals([2, 4, 6], $this->throwing);
-        $this->assertEquals([2, 4, 6], $this->catched);
+        $this->assertEquals($expectedProcessed, $this->processed);
+        $this->assertEquals($expectedThrows, $this->throwing);
+        $this->assertEquals($expectedCatches, $this->catched);
     }
 
-    private function getIterator($items)
+    private function getIterator($items): Generator
     {
         foreach ($items as $item) {
             try {
@@ -44,5 +52,33 @@ class GeneratorTest extends TestCase
                 $this->catched[] = $e->getMessage();
             }
         }
+    }
+
+    public function sequenceProvider(): array
+    {
+        return [
+            [
+                range(1, 2),
+                [1, 2],
+                [2],
+                [2],
+            ],
+            /**
+             * Without the wrapper, processed items are:
+             *  [ 1, 2, 4, 6 ]
+             */
+            [
+                range(1, 6),
+                [1, 2, 3, 4, 5, 6],
+                [2, 4, 6],
+                [2, 4, 6],
+            ],
+            [
+                range(1, 9),
+                [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                [2, 4, 6, 8],
+                [2, 4, 6, 8],
+            ],
+        ];
     }
 }

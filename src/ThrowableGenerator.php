@@ -22,8 +22,10 @@ class ThrowableGenerator implements IteratorAggregate
 {
     /** @var Generator */
     private $inner;
-    /** @var */
-    private $lastException;
+    /** @var Throwable */
+    private $exception;
+    /** @var array */
+    private $items = [];
 
     public function __construct(Generator $inner)
     {
@@ -36,20 +38,32 @@ class ThrowableGenerator implements IteratorAggregate
             retry:
             yield $item;
 
-            if ($this->lastException) {
-                $item = $this->inner->throw($this->lastException);
-                $this->lastException = null;
-
-                // $item may be missing if the inner generator ended
+            if ($this->exception) {
+                $value = $this->inner->throw($this->exception);
                 if ($this->inner->valid()) {
-                    goto retry;
+                    $this->items[] = $value;
                 }
+                $this->exception = null;
+            }
+
+            if ($this->items) {
+                $item = array_shift($this->items);
+
+                goto retry;
             }
         }
     }
 
     public function throw(Throwable $e)
     {
-        $this->lastException = $e;
+        $this->exception = $e;
+    }
+
+    public function send($value)
+    {
+        $nextValue = $this->inner->send($value);
+        if ($this->inner->valid()) {
+            $this->items[] = $nextValue;
+        }
     }
 }
