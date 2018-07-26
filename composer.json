@@ -17,7 +17,15 @@
             "glen\\ThrowableGenerator\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "glen\\ThrowableGenerator\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "php": "^7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.2"
     }
 }
