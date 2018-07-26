@@ -10,23 +10,24 @@ class SenderTest extends TestCase
     private $processed = [];
     private $values = [];
 
+
     /**
-     * without the wrapper $processed items are:
-     *  [1, 3, 5]
-     * and $values:
-     *  [1, null, 3, null, 5, null]
+     * @dataProvider sequenceProvider
      */
-    public function testSendReceivesAllValues()
-    {
-        $generator = $this->getIterator(range(1, 6));
+    public function testSendReceivesAllValues(
+        array $items,
+        array $expectedProcessed,
+        array $expectedValues
+    ) {
+        $generator = $this->getIterator($items);
         $generator = new ThrowableGenerator($generator);
 
         foreach ($generator as $item) {
             $this->processed[] = $item;
             $generator->send($item);
         }
-        $this->assertEquals([1, 2, 3, 4, 5, 6], $this->processed);
-        $this->assertEquals([1, 2, 3, 4, 5, 6], $this->values);
+        $this->assertEquals($expectedProcessed, $this->processed);
+        $this->assertEquals($expectedValues, $this->values);
     }
 
     private function getIterator($items): Generator
@@ -34,5 +35,27 @@ class SenderTest extends TestCase
         foreach ($items as $item) {
             $this->values[] = yield $item;
         }
+    }
+
+    public function sequenceProvider(): array
+    {
+        return [
+            /**
+             * without the wrapper $processed items are:
+             *  [1, 3, 5]
+             * and $values:
+             *  [1, null, 3, null, 5, null]
+             */
+            [
+                range(1, 6),
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+            ],
+            [
+                range(1, 9),
+                [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            ],
+        ];
     }
 }
