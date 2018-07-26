@@ -38,13 +38,7 @@ class ThrowableGenerator implements IteratorAggregate
             retry:
             yield $item;
 
-            if ($this->exception) {
-                $value = $this->inner->throw($this->exception);
-                if ($this->inner->valid()) {
-                    $this->items[] = $value;
-                }
-                $this->exception = null;
-            }
+            $this->maybeThrowException();
 
             if ($this->items) {
                 $item = array_shift($this->items);
@@ -54,16 +48,35 @@ class ThrowableGenerator implements IteratorAggregate
         }
     }
 
-    public function throw(Throwable $e)
+    public function throw(Throwable $e): void
     {
         $this->exception = $e;
     }
 
-    public function send($value)
+    private function maybeThrowException(): void
     {
+        if ($this->exception) {
+            $value = $this->inner->throw($this->exception);
+            if ($this->inner->valid()) {
+                $this->items[] = $value;
+            }
+            $this->exception = null;
+        }
+    }
+
+    public function send($value): void
+    {
+        $this->maybeThrowException();
         $nextValue = $this->inner->send($value);
         if ($this->inner->valid()) {
             $this->items[] = $nextValue;
+        } else {
+            error_log("Inner not valid");
         }
+    }
+
+    public function valid(): bool
+    {
+        return $this->inner->valid() or count($this->items);
     }
 }
