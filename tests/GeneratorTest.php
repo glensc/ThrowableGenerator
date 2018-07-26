@@ -2,6 +2,7 @@
 
 namespace glen\ThrowableGenerator\Tests;
 
+use Generator;
 use glen\ThrowableGenerator\ThrowableGenerator;
 use InvalidArgumentException;
 use Throwable;
@@ -12,6 +13,10 @@ class GeneratorTest extends TestCase
     private $throwing = [];
     private $catched = [];
 
+    /**
+     * Without the wrapper, processed items are:
+     *  [ 1, 2, 4, 6 ]
+     */
     public function testIteratorReceivesAllItems()
     {
         $generator = $this->getIterator(range(1, 6));
@@ -34,7 +39,7 @@ class GeneratorTest extends TestCase
         $this->assertEquals([2, 4, 6], $this->catched);
     }
 
-    private function getIterator($items)
+    private function getIterator($items): Generator
     {
         foreach ($items as $item) {
             try {
