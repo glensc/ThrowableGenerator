@@ -1,64 +1,61 @@
 # ThrowableGenerator
 
-Generator wrapper for yield be sequential regardless of using Generator::throw.
+Generator wrapper for yield be sequential regardless of using [Generator::throw].
 
-[Generator::throw] omits next value from generator, instead it makes it return value of `throw()` method.
+From top level view, [Generator::throw] discards next value from generator,
+but it's not completely lost, but instead it becames return value of `throw()` method.
 
 This is rather inconvenient if you want values be returned by `yield`.
 
 ```php
-class moo
-{
-    public function run()
-    {
-        $generator = $this->getIterator();
-        foreach ($generator as $item) {
-            try {
-                error_log("PROCESS: {$item}");
-
-                if ($item % 2 === 0) {
-                    error_log("throwing InvalidArgumentException $item");
-                    throw new InvalidArgumentException($item);
-                }
-            } catch (Throwable $e) {
-                $generator->throw($e);
-            }
-        }
+<?php
+ 
+function generator() {
+  foreach (range(1, 6) as $x) {
+    try {
+      yield $x;
+    } catch (Throwable $e) {
+      echo " !! exception: {$e->getMessage()}\n";
     }
-
-    private function getIterator()
-    {
-        foreach (range(1, 6) as $item) {
-            try {
-                yield $item;
-
-            } catch (Throwable $e) {
-
-                $class = get_class($e);
-                error_log("GOT[$class] in generator: {$e->getMessage()}");
-            }
-        }
-    }
+  }
 }
 
-$m = new moo();
-$m->run();
+$generator = generator();
+
+foreach ($generator as $x) {
+  echo "process: $x\n";
+  if ($x % 2 === 0) {
+    $generator->throw(new RuntimeException($x));
+  }
+}
 ```
 
 The above code prints:
 
 ```text
-PROCESS: 1
-PROCESS: 2
-throwing InvalidArgumentException 2
-GOT[InvalidArgumentException] in generator: 2
-PROCESS: 4
-throwing InvalidArgumentException 4
-GOT[InvalidArgumentException] in generator: 4
-PROCESS: 6
-throwing InvalidArgumentException 6
-GOT[InvalidArgumentException] in generator: 6
+process: 1
+process: 2
+ !! exception: 2
+process: 4
+ !! exception: 4
+process: 6
+ !! exception: 6
 ```
+
+i.e values `3` and `5` were "lost" by using `throw`. This library makes result to be:
+
+```text
+process: 1
+process: 2
+ !! exception: 2
+process: 3
+process: 4
+ !! exception: 4
+process: 5
+process: 6
+ !! exception: 6
+```
+
 
 See question and discussion on [stackoverflow post]
 
